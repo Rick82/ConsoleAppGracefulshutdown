@@ -8,7 +8,7 @@ using System;
 using Microsoft.Extensions.DependencyInjection;
 using MyConsoleApp;
 
-Host.CreateDefaultBuilder(args)
+var host = Host.CreateDefaultBuilder(args)
     .ConfigureLogging(logging =>
     {
         logging.ClearProviders();
@@ -27,12 +27,16 @@ Host.CreateDefaultBuilder(args)
     })
     .ConfigureServices(services =>
     {
-        services.AddHostedService<MyTestWork>();
+        //services.AddHostedService<MyTestWork>();
+        services.AddHostedService<MyTestWork2>();
         services.AddSingleton<Sports>();
     })
-    .Build().RunAsync();
+    .Build();
+
+await host.StartAsync();
 
 
+await host.WaitForShutdownAsync();
 
 
 

@@ -21,10 +21,6 @@ namespace MyConsoleApp
         {
             _logger = logger;
 
-            hostApplicationLifetime.ApplicationStarted.Register(appStarted);
-            hostApplicationLifetime.ApplicationStopping.Register(appStopping);
-            hostApplicationLifetime.ApplicationStopped.Register(appStopped);
-
             _channel = Channel.CreateBounded<int>(new BoundedChannelOptions(100)
             {
                 FullMode = BoundedChannelFullMode.Wait,
@@ -32,6 +28,10 @@ namespace MyConsoleApp
                 SingleReader = true
             });
             _testQueue = new ConcurrentQueue<int>();
+
+            hostApplicationLifetime.ApplicationStarted.Register(appStarted);
+            hostApplicationLifetime.ApplicationStopping.Register(appStopping);
+            hostApplicationLifetime.ApplicationStopped.Register(appStopped);
             _hostApplicationLifetime = hostApplicationLifetime;
         }
 
@@ -49,14 +49,15 @@ namespace MyConsoleApp
         private void appStopped()
         {
             _logger.LogInformation("LSports Stopped");
-        }
+        }        
 
         public Task RunLogic(CancellationToken cancellationToken)
         {
-            var p = Producer(_channel.Writer);
-            var c = Consumer(_channel.Reader, cancellationToken);
+              var p = Producer(_channel.Writer);
+              var c = Consumer(_channel.Reader, cancellationToken);
 
-            Task.WaitAll(p, c);
+            Task.WaitAll(p, c);            
+
             _hostApplicationLifetime.StopApplication();
             return Task.CompletedTask;
         }
@@ -67,13 +68,15 @@ namespace MyConsoleApp
             {
                 if (_isStopping)
                 {
-                    _testQueue.TryPeek(out int val);
-                    _logger.LogInformation($"The Channel Current Val is {val}, Last Val is {_testQueue.Last()}");
+                    if (_testQueue.TryPeek(out int val))
+                    {
+                        _logger.LogInformation($"The Channel Current Val is {val}, Last Val is {_testQueue.Last()}");
+                    }                    
                     break;
                 }
                 await writer.WriteAsync(i);
                 _testQueue.Enqueue(i);
-                //await Task.Delay(TimeSpan.FromSeconds(1));
+                await Task.Delay(TimeSpan.FromSeconds(1));
             }
             writer.Complete();
         }
@@ -89,7 +92,7 @@ namespace MyConsoleApp
                     throw new Exception("not the same");
                 }
 
-                //await Task.Delay(TimeSpan.FromSeconds(0.1), CancellationToken.None);
+                await Task.Delay(TimeSpan.FromSeconds(3), CancellationToken.None);
             }
         }
     }
