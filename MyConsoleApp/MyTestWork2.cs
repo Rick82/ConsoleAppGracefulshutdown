@@ -13,7 +13,7 @@ namespace MyConsoleApp
         private readonly ILogger<MyTestWork2> _logger;
         //private readonly Sports _lsports;
         private readonly IHostApplicationLifetime _hostApplicationLifetime;
-
+        private readonly TaskCompletionSource src = new();
         public MyTestWork2(ILogger<MyTestWork2> logger, IHostApplicationLifetime hostApplicationLifetime)
         {
             _logger = logger;
@@ -27,6 +27,7 @@ namespace MyConsoleApp
         private void appStarted()
         {
             _logger.LogInformation("AppStarted");
+            src.SetResult();
         }
 
         private void appStopping()
@@ -41,12 +42,15 @@ namespace MyConsoleApp
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            var result = await WaitForAppStartup(_hostApplicationLifetime, stoppingToken);
+            //var result = await WaitForAppStartup(_hostApplicationLifetime, stoppingToken);
 
-            if (!result)
-            {
-                return;
-            }
+            //if (!result)
+            //{
+            //    return;
+            //}
+            await src.Task;
+
+
             await Task.WhenAll(LogVal(stoppingToken));
         }
 
@@ -66,11 +70,11 @@ namespace MyConsoleApp
             var startedSource = new TaskCompletionSource();
             var cancelledSource = new TaskCompletionSource();
 
-            using var reg1 = lifetime.ApplicationStarted.Register(()=>
+            using var reg1 = lifetime.ApplicationStarted.Register(() =>
             {
                 startedSource.SetResult();
             });
-            using var reg2 = stoppingToken.Register(()=>
+            using var reg2 = stoppingToken.Register(() =>
             {
                 cancelledSource.SetResult();
             });

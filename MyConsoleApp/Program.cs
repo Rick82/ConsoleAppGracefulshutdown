@@ -23,12 +23,12 @@ var host = Host.CreateDefaultBuilder(args)
         builder.AddJsonFile("appsettings.json", false, true);
         builder.AddJsonFile($"appsettings.{enviroment}.json", true, true);
         builder.AddEnvironmentVariables();
-
+        builder.AddCommandLine(args);
     })
     .ConfigureServices(services =>
     {
-        //services.AddHostedService<MyTestWork>();
-        services.AddHostedService<MyTestWork2>();
+        services.AddHostedService<MyTestWork>();
+        //services.AddHostedService<MyTestWork2>();
         services.AddSingleton<Sports>();
     })
     .Build();
