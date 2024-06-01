@@ -7,6 +7,7 @@ using Serilog;
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using MyConsoleApp;
+using MyConsoleApp.Service;
 
 var host = Host.CreateDefaultBuilder(args)
     .ConfigureLogging(logging =>
@@ -27,9 +28,11 @@ var host = Host.CreateDefaultBuilder(args)
     })
     .ConfigureServices(services =>
     {
-        services.AddHostedService<MyTestWork>();
+        //services.AddHostedService<MyTestWork>();
         //services.AddHostedService<MyTestWork2>();
+        services.AddHostedService<MyTestWork3>();
         services.AddSingleton<Sports>();
+        services.AddSingleton<EasyNetQRabbitGrabber>();
     })
     .Build();
 
